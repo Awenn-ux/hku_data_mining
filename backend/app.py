@@ -1,5 +1,5 @@
 """
-HKU 智能助手 - 简化版 Flask 后端
+HKU 智能助手
 """
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS

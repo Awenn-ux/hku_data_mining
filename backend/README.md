@@ -118,15 +118,6 @@ python admin_import_documents.py knowledge_base/
 
 详细说明请参考 `knowledge_base/README.md`。
 
-## 开发者提示
-
-- 启动后端前请确保 `.env` 已正确配置。
-- 若需要热重载，可考虑使用 `flask run` 或其他自动重启方案。
-- 上传文档与 ChromaDB 数据存储在 `storage/` 目录，注意权限与备份。
-- 生产环境建议：
-  - 使用 PostgreSQL 或其他托管数据库。
-  - 替换 Session 存储（例如 Redis）。
-  - 将 DeepSeek/OpenAI/Graph 等密钥存放在安全的配置管理工具中。
 
 ## 测试脚本
 
@@ -136,9 +127,4 @@ python admin_import_documents.py knowledge_base/
 python test_api.py
 ```
 
-如需更全面的测试，可自行编写 pytest 或 Postman 测试集。
-
----
-
-如需扩展或集成更多功能（如多模型支持、异步任务、团队管理等），可在 `services/` 与 `routes/` 中扩展相关逻辑。
 
