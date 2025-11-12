@@ -1,0 +1,31 @@
+# Flask 核心
+Flask==3.0.0
+Flask-CORS==4.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Session==0.5.0
+
+# 数据库
+SQLAlchemy==2.0.23
+
+# 向量数据库
+chromadb==0.4.22
+
+# AI 服务
+openai==1.10.0
+
+# 文档处理
+PyPDF2==3.0.1
+python-docx==1.1.0
+
+# Microsoft Graph
+msal==1.26.0
+requests==2.31.0
+
+# 工具
+python-dotenv==1.0.0
+Werkzeug==3.0.1
+httpx==0.26.0
+
+# 可选：WSGI 服务器
+gunicorn==21.2.0
+
