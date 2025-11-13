@@ -159,7 +159,7 @@ python admin_import_documents.py /path/to/documents/
 | 文档上传失败 | 确认文件类型/大小符合要求，查看后端日志排查。 |
 
 ## 后续计划
--邮箱的api的检索
-- 将邮箱检索升级为向量化语义搜索。
-- 支持更多文档格式与异步处理。
-- 接入更多 LLM 模型（如 DeepSeek）。
+-邮箱的api的检索，api注册以及使用：Zhong yiwang
+-向量RAG检索-官网搜索相关pdf以及可以自己编写一些，上传同时进行检测（rag也可以替换成现有的模型langchain）Zhou ruoyan
+-pre+也可以搜索一些相关资料：Yao haoran
+

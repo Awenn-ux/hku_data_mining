@@ -30,13 +30,13 @@ const LoginPage = () => {
     try {
       const response = await apiService.devLogin();
       const { user } = response.data;
-
+      
       // Session 认证，仅存储用户信息
       localStorage.setItem('user', JSON.stringify(user));
-
+      
       // 更新用户状态（setUser 会自动设置 isAuthenticated）
       setUser(user);
-
+      
       message.success('开发者登录成功');
       navigate('/chat');
     } catch (error: any) {
