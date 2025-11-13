@@ -93,7 +93,7 @@ class ApiService {
   }
 
   async refreshToken(refreshToken: string): Promise<ApiResponse<TokenResponse>> {
-    // 简化版暂不支持独立的 refresh 接口，由后端自动处理
+
     return Promise.reject('Not supported in simplified version');
   }
 
@@ -110,24 +110,24 @@ class ApiService {
 
   // ============ 聊天 API ============
   async sendMessage(request: ChatQueryRequest): Promise<ApiResponse<ChatQueryResponse>> {
-    // 简化版接口: POST /api/chat/ask
+
     return this.api.post('/api/chat/ask', {
       question: request.query || request.question,
     });
   }
 
   async getConversations(): Promise<ApiResponse<any[]>> {
-    // 简化版改为获取历史记录
+
     return this.api.get('/api/chat/history');
   }
 
   async getConversationDetail(id: string): Promise<ApiResponse<any>> {
-    // 简化版不支持单独获取会话详情
+
     return Promise.reject('Not supported in simplified version');
   }
 
   async deleteConversation(id: string): Promise<ApiResponse> {
-    // 简化版: 删除历史记录
+
     return this.api.delete(`/api/chat/history/${id}`);
   }
 
@@ -147,7 +147,7 @@ class ApiService {
   }
 
   async getDocumentDetail(id: string): Promise<ApiResponse<Document>> {
-    // 简化版不支持单独获取文档详情
+
     return Promise.reject('Not supported in simplified version');
   }
 
@@ -156,12 +156,12 @@ class ApiService {
   }
 
   async reprocessDocument(id: string): Promise<ApiResponse> {
-    // 简化版不支持重新处理
+
     return Promise.reject('Not supported in simplified version');
   }
 
   async searchDocuments(query: string, topK: number = 5): Promise<ApiResponse> {
-    // 简化版改为 POST 请求
+
     return this.api.post('/api/knowledge/search', {
       query,
       top_k: topK,
@@ -187,14 +187,14 @@ class ApiService {
     emails: EmailMessage[];
     count: number;
   }>> {
-    // 简化版: 获取最近邮件
+
     return this.api.get('/api/email/recent', {
       params: { top },
     });
   }
 
   async getEmailDetail(id: string): Promise<ApiResponse<EmailMessage>> {
-    // 简化版不支持获取邮件详情
+    // 不支持获取邮件详情
     return Promise.reject('Not supported in simplified version');
   }
 
@@ -202,7 +202,7 @@ class ApiService {
     emails: EmailMessage[];
     count: number;
   }>> {
-    // 简化版改为 POST 请求
+    // 改为 POST 请求
     return this.api.post('/api/email/search', {
       keyword,
       top,
@@ -210,7 +210,7 @@ class ApiService {
   }
 
   async getCalendarEvents(): Promise<ApiResponse> {
-    // 简化版不支持日历功能
+    // 不支持日历功能
     return Promise.reject('Not supported in simplified version');
   }
 
@@ -224,7 +224,7 @@ class ApiService {
   }
 
   async getSystemStats(): Promise<ApiResponse<SystemStats>> {
-    // 简化版不支持系统统计
+    // 不支持系统统计
     return Promise.reject('Not supported in simplified version');
   }
 
