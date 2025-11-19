@@ -6,6 +6,7 @@ from datetime import datetime
 from database import db, User
 from config import Config
 from services.email_service import EmailService
+from utils.email_token import ensure_valid_access_token
 
 email_bp = Blueprint('email', __name__)
 
@@ -40,25 +41,14 @@ def search_emails():
         return jsonify({'code': 400, 'message': '关键词不能为空', 'data': None}), 400
     
     try:
-        # 检查 token 是否过期，如果过期则刷新
-        if user.token_expires_at and user.token_expires_at < datetime.utcnow():
-            if user.refresh_token:
-                token_result = email_service.refresh_access_token(
-                    user.refresh_token,
-                    Config.GRAPH_SCOPES
-                )
-                user.access_token = token_result['access_token']
-                user.token_expires_at = datetime.fromtimestamp(
-                    token_result['expires_in'] + datetime.now().timestamp()
-                )
-                db.session.commit()
-            else:
-                return jsonify({
-                    'code': 401,
-                    'message': 'Token 已过期，请重新登录',
-                    'data': None
-                }), 401
-        
+        ok, error_msg = ensure_valid_access_token(user, email_service)
+        if not ok:
+            return jsonify({
+                'code': 401,
+                'message': error_msg or 'Token 无效，请重新登录',
+                'data': None
+            }), 401
+
         # 搜索邮件
         emails = email_service.search_emails(user.access_token, keyword, top)
         
@@ -101,7 +91,20 @@ def get_recent_emails():
     top = request.args.get('top', 50, type=int)
     
     try:
+        ok, error_msg = ensure_valid_access_token(user, email_service)
+        if not ok:
+            return jsonify({
+                'code': 401,
+                'message': error_msg or 'Token 无效，请重新登录',
+                'data': None
+            }), 401
+
+        print(f"正在获取用户 {user.email} 的邮件...")
+        print(f"access_token存在: {bool(user.access_token)}")
+        
         emails = email_service.get_recent_emails(user.access_token, top)
+        
+        print(f"成功获取 {len(emails)} 封邮件")
         
         return jsonify({
             'code': 0,
@@ -113,6 +116,9 @@ def get_recent_emails():
         })
         
     except Exception as e:
+        print(f"获取邮件异常: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'code': 500,
             'message': f'获取邮件失败: {str(e)}',

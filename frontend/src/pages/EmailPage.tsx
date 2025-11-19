@@ -18,21 +18,42 @@ const EmailPage = () => {
   const [loading, setLoading] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('EmailPage mounted, user:', user);
+    console.log('email_connected:', user?.email_connected);
+    
+    // 只有在邮箱已连接时才加载邮件
     if (user?.email_connected) {
+      console.log('开始加载邮件...');
       loadEmails();
     }
-  }, [user]);
+  }, [user?.email_connected]);
 
   const loadEmails = async () => {
+    console.log('loadEmails 被调用');
     setLoading(true);
+    setError(null);
     try {
+      console.log('正在调用 API...');
       const response = await apiService.getEmails(50);
-      setEmails(response.data);
-    } catch (error) {
-      // message.error('加载邮件失败');
+      console.log('API 响应:', response);
+      
+      if (response && response.data && response.data.emails) {
+        console.log('成功获取邮件:', response.data.emails.length, '封');
+        setEmails(response.data.emails);
+      } else {
+        console.log('响应数据格式不正确:', response);
+        setEmails([]);
+      }
+    } catch (error: any) {
+      console.error('加载邮件失败:', error);
+      console.error('错误详情:', error.response || error);
+      setError(error?.message || '加载邮件失败');
+      setEmails([]);
     } finally {
+      console.log('loadEmails 完成');
       setLoading(false);
     }
   };
@@ -40,10 +61,12 @@ const EmailPage = () => {
   const handleConnect = async () => {
     setConnecting(true);
     try {
-      await apiService.connectEmail();
-      loadEmails();
+      // 获取Microsoft登录URL并跳转
+      const response = await apiService.getLoginUrl();
+      window.location.href = response.data.auth_url;
     } catch (error) {
       // message.error('连接邮箱失败');
+      console.error('获取登录链接失败:', error);
     } finally {
       setConnecting(false);
     }
@@ -54,15 +77,21 @@ const EmailPage = () => {
     setLoading(true);
     try {
       const response = await apiService.searchEmails(searchQuery);
-      setEmails(response.data);
+      setEmails(response.data.emails || []);
     } catch (error) {
-      // message.error('搜索失败');
+      console.error('搜索邮件失败:', error);
+      setEmails([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // 添加调试信息
+  console.log('EmailPage render, user:', user, 'error:', error, 'loading:', loading, 'emails:', emails.length);
+
+  // 如果用户未连接邮箱，显示连接提示
   if (!user?.email_connected) {
+    console.log('用户未连接邮箱，显示连接提示');
     return (
       <div className="h-[calc(100vh-200px)] flex items-center justify-center">
         <motion.div
@@ -76,8 +105,11 @@ const EmailPage = () => {
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
             连接您的邮箱
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
-            连接 Outlook 邮箱后，AI 助手可以基于您的邮件内容提供更个性化的回答
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            使用 Microsoft 账号登录后，AI 助手可以基于您的邮件内容提供更个性化的回答
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-500 mb-8">
+            💡 提示：开发者登录无法访问邮箱功能，请使用 Microsoft 账号登录
           </p>
           <Button
             type="primary"
@@ -87,9 +119,24 @@ const EmailPage = () => {
             loading={connecting}
             className="h-12 px-8 bg-gradient-hku border-0"
           >
-            连接 Outlook 邮箱
+            使用 Microsoft 账号登录
           </Button>
         </motion.div>
+      </div>
+    );
+  }
+
+  // 如果有错误，显示错误信息
+  if (error) {
+    return (
+      <div className="h-[calc(100vh-200px)] flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 mb-4 text-lg">⚠️ 加载失败</div>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          <Button onClick={() => { setError(null); loadEmails(); }}>
+            重试
+          </Button>
+        </div>
       </div>
     );
   }
@@ -146,35 +193,29 @@ const EmailPage = () => {
 
       {/* 邮件列表 */}
       <Card className="card-hku">
-        <List
-          loading={loading}
-          dataSource={emails}
-          locale={{
-            emptyText: (
-              <Empty
-                description="暂无邮件"
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-              />
-            ),
-          }}
-          renderItem={(email, index) => (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <List.Item
-                className="hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg px-4 transition-colors cursor-pointer"
+        {loading ? (
+          <div className="text-center py-8">加载中...</div>
+        ) : !Array.isArray(emails) || emails.length === 0 ? (
+          <Empty
+            description="暂无邮件"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        ) : (
+          <div className="space-y-2">
+            {emails.map((email, index) => (
+              <div
+                key={email.id || index}
+                className="hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-4 transition-colors cursor-pointer border-b last:border-b-0"
               >
-                <List.Item.Meta
-                  avatar={
-                    <div className="w-10 h-10 rounded-full bg-gradient-hku flex items-center justify-center text-white font-bold">
-                      {email.sender[0]?.toUpperCase()}
-                    </div>
-                  }
-                  title={
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium">{email.subject}</span>
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-hku flex items-center justify-center text-white font-bold flex-shrink-0">
+                    {email.sender?.[0]?.toUpperCase() || '?'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="font-medium text-gray-900 dark:text-white truncate">
+                        {email.subject || '无主题'}
+                      </span>
                       {email.is_academic && (
                         <Tag color="green" className="text-xs">
                           学术
@@ -184,30 +225,21 @@ const EmailPage = () => {
                         <Badge status="error" text="重要" />
                       )}
                     </div>
-                  }
-                  description={
-                    <div className="space-y-1">
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                        来自: {email.sender} ({email.sender_email})
-                      </div>
-                      <div className="text-sm text-gray-500 line-clamp-2">
-                        {email.body_preview}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {new Date(email.received_at).toLocaleString('zh-CN')}
-                      </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                      来自: {email.sender || '未知'} ({email.sender_email || ''})
                     </div>
-                  }
-                />
-              </List.Item>
-            </motion.div>
-          )}
-          pagination={{
-            pageSize: 20,
-            showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 封邮件`,
-          }}
-        />
+                    <div className="text-sm text-gray-500 line-clamp-2 mb-1">
+                      {email.body_preview || ''}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {email.received_at ? new Date(email.received_at).toLocaleString('zh-CN') : ''}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
     </div>
   );

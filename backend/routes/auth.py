@@ -47,11 +47,9 @@ def callback():
     try:
         code = request.args.get('code')
         if not code:
-            return jsonify({
-                'code': 400,
-                'message': '缺少授权码',
-                'data': None
-            }), 400
+            # 重定向到前端登录页，带错误信息
+            from flask import redirect
+            return redirect(f"{Config.FRONTEND_URL}/login?error=missing_code")
         
         # 使用授权码获取 token
         token_result = email_service.get_token_from_code(
@@ -61,11 +59,10 @@ def callback():
         )
         
         if 'error' in token_result:
-            return jsonify({
-                'code': 400,
-                'message': f"获取 token 失败: {token_result.get('error_description', '未知错误')}",
-                'data': None
-            }), 400
+            # 重定向到前端登录页，带错误信息
+            from flask import redirect
+            error_msg = token_result.get('error_description', '未知错误')
+            return redirect(f"{Config.FRONTEND_URL}/login?error={error_msg}")
         
         # 获取用户信息
         access_token = token_result['access_token']
@@ -94,22 +91,15 @@ def callback():
         # 保存用户 ID 到 session
         session['user_id'] = user.id
         
-        return jsonify({
-            'code': 0,
-            'message': '登录成功',
-            'data': {
-                'user': user.to_dict(),
-                'token': access_token  # 前端可以保存这个 token
-            }
-        })
+        # 成功后重定向到前端回调页面，让前端重新获取用户信息
+        from flask import redirect
+        return redirect(f"{Config.FRONTEND_URL}/auth/callback")
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({
-            'code': 500,
-            'message': f'登录失败: {str(e)}',
-            'data': None
-        }), 500
+        # 重定向到前端登录页，带错误信息
+        from flask import redirect
+        return redirect(f"{Config.FRONTEND_URL}/login?error={str(e)}")
 
 
 @auth_bp.route('/logout', methods=['POST'])

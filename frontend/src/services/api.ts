@@ -43,25 +43,31 @@ class ApiService {
       (response) => response.data,
       async (error: AxiosError<ApiResponse>) => {
         if (error.response?.status === 401) {
-          // Token 过期，尝试刷新
-          const refreshToken = localStorage.getItem('refresh_token');
-          if (refreshToken) {
-            try {
-              const { data } = await this.refreshToken(refreshToken);
-              localStorage.setItem('access_token', data.access_token);
-              // 重试原请求
-              if (error.config) {
-                error.config.headers.Authorization = `Bearer ${data.access_token}`;
-                return this.api.request(error.config);
+          // 401错误：未登录或session过期
+          // 只有在不是 /api/auth/me 请求时才跳转登录页
+          const isAuthCheck = error.config?.url?.includes('/api/auth/me');
+          
+          if (!isAuthCheck) {
+            // 非认证检查的401错误，清除认证信息并跳转
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (refreshToken) {
+              try {
+                const { data } = await this.refreshToken(refreshToken);
+                localStorage.setItem('access_token', data.access_token);
+                // 重试原请求
+                if (error.config) {
+                  error.config.headers.Authorization = `Bearer ${data.access_token}`;
+                  return this.api.request(error.config);
+                }
+              } catch {
+                // 刷新失败，清除 token 并跳转登录
+                this.clearAuth();
+                window.location.href = '/login';
               }
-            } catch {
-              // 刷新失败，清除 token 并跳转登录
+            } else {
               this.clearAuth();
               window.location.href = '/login';
             }
-          } else {
-            this.clearAuth();
-            window.location.href = '/login';
           }
         }
         return Promise.reject(error.response?.data || error.message);

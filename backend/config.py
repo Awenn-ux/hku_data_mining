@@ -11,6 +11,7 @@ class Config:
     # 基础配置
     DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
     
     # 数据库配置
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///hku_assistant.db')

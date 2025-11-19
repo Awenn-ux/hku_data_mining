@@ -23,7 +23,6 @@ class EmailService:
         app = msal.ConfidentialClientApplication(
             self.client_id,
             authority=f"{self.AUTHORITY}/{self.tenant_id}",
-            client_credential=self.client_secret
         )
         
         auth_url = app.get_authorization_request_url(
@@ -38,7 +37,6 @@ class EmailService:
         app = msal.ConfidentialClientApplication(
             self.client_id,
             authority=f"{self.AUTHORITY}/{self.tenant_id}",
-            client_credential=self.client_secret
         )
         
         result = app.acquire_token_by_authorization_code(
@@ -54,7 +52,6 @@ class EmailService:
         app = msal.ConfidentialClientApplication(
             self.client_id,
             authority=f"{self.AUTHORITY}/{self.tenant_id}",
-            client_credential=self.client_secret
         )
         
         result = app.acquire_token_by_refresh_token(
@@ -112,25 +109,48 @@ class EmailService:
     
     def get_recent_emails(self, access_token: str, top: int = 50) -> List[Dict]:
         """获取最近的邮件"""
-        headers = {'Authorization': f'Bearer {access_token}'}
-        
-        params = {
-            '$top': top,
-            '$select': 'subject,from,receivedDateTime,bodyPreview',
-            '$orderby': 'receivedDateTime DESC'
-        }
-        
-        response = requests.get(
-            f'{self.GRAPH_API_ENDPOINT}/me/messages',
-            headers=headers,
-            params=params
-        )
-        
-        if response.status_code != 200:
+        try:
+            headers = {'Authorization': f'Bearer {access_token}'}
+            
+            params = {
+                '$top': top,
+                '$select': 'subject,from,receivedDateTime,bodyPreview,importance',
+                '$orderby': 'receivedDateTime DESC'
+            }
+            
+            response = requests.get(
+                f'{self.GRAPH_API_ENDPOINT}/me/messages',
+                headers=headers,
+                params=params,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"获取邮件失败: HTTP {response.status_code}")
+                print(f"响应内容: {response.text}")
+                return []
+            
+            data = response.json()
+            emails = []
+            
+            for item in data.get('value', []):
+                sender_info = item.get('from', {}).get('emailAddress', {})
+                emails.append({
+                    'id': item.get('id'),
+                    'subject': item.get('subject', '无主题'),
+                    'sender': sender_info.get('name', '未知发件人'),
+                    'sender_email': sender_info.get('address', ''),
+                    'received_at': item.get('receivedDateTime', ''),
+                    'body_preview': item.get('bodyPreview', ''),
+                    'importance': item.get('importance', 'normal'),
+                    'is_academic': False,  # 示例，可以添加关键词判断
+                    'source': 'email'
+                })
+                
+            return emails
+        except Exception as e:
+            print(f"获取邮件异常: {str(e)}")
             return []
-        
-        data = response.json()
-        return data.get('value', [])
 
 
 def keyword_search_in_emails(emails: List[Dict], keywords: List[str]) -> List[Dict]:

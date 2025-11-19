@@ -1,16 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Card, message } from 'antd';
 import { motion } from 'framer-motion';
 import { LogIn, TrendingUp, Mail, BookOpen, Code } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
 import apiService from '@/services/api';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setUser } = useStore();
   const [loading, setLoading] = useState(false);
   const [devLoading, setDevLoading] = useState(false);
+
+  // 检查URL中是否有错误信息（OAuth回调失败）
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error) {
+      message.error(`登录失败: ${decodeURIComponent(error)}`);
+    }
+  }, [searchParams]);
 
   const handleLogin = async () => {
     setLoading(true);

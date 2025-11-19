@@ -20,6 +20,7 @@ python-docx==1.1.0
 # Microsoft Graph
 msal==1.26.0
 requests==2.31.0
+numpy<2
 
 # 工具
 python-dotenv==1.0.0

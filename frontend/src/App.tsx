@@ -6,6 +6,7 @@ import LoginPage from './pages/Login';
 import ChatPage from './pages/ChatPage';
 import EmailPage from './pages/EmailPage';
 import SettingsPage from './pages/SettingsPage';
+import AuthCallback from './pages/AuthCallback';
 
 function App() {
   const { theme, isAuthenticated } = useStore();
@@ -28,6 +29,9 @@ function App() {
       <Routes>
         {/* 登录页 */}
         <Route path="/login" element={<LoginPage />} />
+        
+        {/* OAuth回调页面 - 不需要认证 */}
+        <Route path="/auth/callback" element={<AuthCallback />} />
         
         {/* 受保护的路由 */}
         <Route
