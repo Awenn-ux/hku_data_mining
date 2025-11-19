@@ -7,7 +7,6 @@ from config import Config
 from services.vector_store import vector_store
 from services.email_service import EmailService
 from services.rag_service import RAGService
-from utils.email_token import ensure_valid_access_token
 
 chat_bp = Blueprint('chat', __name__)
 
@@ -54,15 +53,10 @@ def ask_question():
                 print(f"知识库检索出错: {e}")
                 return []
         
-        ok_token = False
-        token_error = None
-        if user.email_connected:
-            ok_token, token_error = ensure_valid_access_token(user, email_service)
-
         def retrieve_emails(query):
             """检索邮箱"""
             try:
-                if not user.email_connected or not user.access_token or not ok_token:
+                if not user.email_connected or not user.access_token:
                     return []
                 return email_service.search_emails(user.access_token, query, top=5)
             except Exception as e:
@@ -78,8 +72,6 @@ def ask_question():
         
         knowledge_docs = retrieval_results['knowledge']
         email_docs = retrieval_results['emails']
-        if user.email_connected and not ok_token and token_error:
-            print(f"邮箱检索跳过：{token_error}")
         
         # 构建上下文
         context = RAGService.build_context(knowledge_docs, email_docs)

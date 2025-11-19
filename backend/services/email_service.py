@@ -23,6 +23,7 @@ class EmailService:
         app = msal.ConfidentialClientApplication(
             self.client_id,
             authority=f"{self.AUTHORITY}/{self.tenant_id}",
+            # client_credential=self.client_secret
         )
         
         auth_url = app.get_authorization_request_url(
@@ -37,6 +38,7 @@ class EmailService:
         app = msal.ConfidentialClientApplication(
             self.client_id,
             authority=f"{self.AUTHORITY}/{self.tenant_id}",
+            # client_credential=self.client_secret
         )
         
         result = app.acquire_token_by_authorization_code(
@@ -52,6 +54,7 @@ class EmailService:
         app = msal.ConfidentialClientApplication(
             self.client_id,
             authority=f"{self.AUTHORITY}/{self.tenant_id}",
+            # client_credential=self.client_secret
         )
         
         result = app.acquire_token_by_refresh_token(
