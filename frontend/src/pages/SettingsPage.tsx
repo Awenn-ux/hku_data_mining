@@ -12,11 +12,11 @@ const SettingsPage = () => {
   const handleSave = async (values: any) => {
     setSaving(true);
     try {
-      // TODO: 调用 API 保存设置
-      console.log('保存设置:', values);
-      message.success('设置保存成功');
+      // TODO: call API to persist settings
+      console.log('Saving settings:', values);
+      message.success('Settings saved successfully');
     } catch (error) {
-      message.error('保存失败');
+      message.error('Failed to save settings');
     } finally {
       setSaving(false);
     }
@@ -24,15 +24,15 @@ const SettingsPage = () => {
 
   return (
     <div className="max-w-4xl space-y-6">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-center space-x-3">
         <Settings className="w-6 h-6 text-hku-green" />
         <div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            系统设置
+            System Settings
           </h1>
           <p className="text-sm text-gray-500">
-            个性化配置您的智能助手
+            Personalize your smart assistant
           </p>
         </div>
       </div>
@@ -46,9 +46,10 @@ const SettingsPage = () => {
           topK: 5,
           temperature: 0.7,
           notifications: true,
+          language: 'en-US',
         }}
       >
-        {/* 个人信息 */}
+        {/* Profile */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -57,7 +58,7 @@ const SettingsPage = () => {
             title={
               <div className="flex items-center space-x-2">
                 <User className="w-5 h-5" />
-                <span>个人信息</span>
+                <span>Profile</span>
               </div>
             }
             className="card-hku"
@@ -65,13 +66,13 @@ const SettingsPage = () => {
             <div className="space-y-4">
               <div>
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  邮箱
+                  Email
                 </div>
                 <div className="font-medium">{user?.email}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  姓名
+                  Name
                 </div>
                 <div className="font-medium">{user?.name}</div>
               </div>
@@ -79,7 +80,7 @@ const SettingsPage = () => {
           </Card>
         </motion.div>
 
-        {/* AI 模型配置 */}
+        {/* AI model configuration */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -89,7 +90,7 @@ const SettingsPage = () => {
             title={
               <div className="flex items-center space-x-2">
                 <Key className="w-5 h-5" />
-                <span>AI 模型配置</span>
+                <span>AI Model Configuration</span>
               </div>
             }
             className="card-hku"
@@ -97,7 +98,7 @@ const SettingsPage = () => {
             <Form.Item
               label="API Key"
               name="apiKey"
-              extra="用于调用 AI 模型的密钥"
+              extra="Used to call AI models"
             >
               <Input.Password
                 placeholder="sk-..."
@@ -107,7 +108,7 @@ const SettingsPage = () => {
             </Form.Item>
 
             <Form.Item
-              label="模型选择"
+              label="Model"
               name="model"
             >
               <Select size="large" className="w-full">
@@ -119,33 +120,33 @@ const SettingsPage = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <Form.Item
-                label="检索文档数"
+                label="Documents retrieved"
                 name="topK"
-                tooltip="从知识库检索的文档数量"
+                tooltip="Number of knowledge-base documents to fetch"
               >
                 <Select size="large">
-                  <Select.Option value={3}>3 个</Select.Option>
-                  <Select.Option value={5}>5 个</Select.Option>
-                  <Select.Option value={10}>10 个</Select.Option>
+                  <Select.Option value={3}>3 items</Select.Option>
+                  <Select.Option value={5}>5 items</Select.Option>
+                  <Select.Option value={10}>10 items</Select.Option>
                 </Select>
               </Form.Item>
 
               <Form.Item
-                label="创造性"
+                label="Creativity"
                 name="temperature"
-                tooltip="数值越高，回答越有创造性"
+                tooltip="Higher values produce more creative answers"
               >
                 <Select size="large">
-                  <Select.Option value={0.3}>保守 (0.3)</Select.Option>
-                  <Select.Option value={0.7}>平衡 (0.7)</Select.Option>
-                  <Select.Option value={1.0}>创新 (1.0)</Select.Option>
+                  <Select.Option value={0.3}>Conservative (0.3)</Select.Option>
+                  <Select.Option value={0.7}>Balanced (0.7)</Select.Option>
+                  <Select.Option value={1.0}>Creative (1.0)</Select.Option>
                 </Select>
               </Form.Item>
             </div>
           </Card>
         </motion.div>
 
-        {/* 外观设置 */}
+        {/* Appearance */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -155,16 +156,16 @@ const SettingsPage = () => {
             title={
               <div className="flex items-center space-x-2">
                 <Palette className="w-5 h-5" />
-                <span>外观设置</span>
+                <span>Appearance</span>
               </div>
             }
             className="card-hku"
           >
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium mb-1">暗色模式</div>
+                <div className="font-medium mb-1">Dark mode</div>
                 <div className="text-sm text-gray-500">
-                  护眼的夜间模式
+                  Eye-friendly night theme
                 </div>
               </div>
               <Switch
@@ -178,19 +179,19 @@ const SettingsPage = () => {
             <Divider />
 
             <Form.Item
-              label="语言"
+              label="Language"
               name="language"
             >
-              <Select size="large" defaultValue="zh-CN">
-                <Select.Option value="zh-CN">简体中文</Select.Option>
+              <Select size="large">
+                <Select.Option value="zh-CN">Simplified Chinese</Select.Option>
                 <Select.Option value="en-US">English</Select.Option>
-                <Select.Option value="zh-HK">繁體中文</Select.Option>
+                <Select.Option value="zh-HK">Traditional Chinese</Select.Option>
               </Select>
             </Form.Item>
           </Card>
         </motion.div>
 
-        {/* 通知设置 */}
+        {/* Notifications */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -200,7 +201,7 @@ const SettingsPage = () => {
             title={
               <div className="flex items-center space-x-2">
                 <Bell className="w-5 h-5" />
-                <span>通知设置</span>
+                <span>Notifications</span>
               </div>
             }
             className="card-hku"
@@ -211,9 +212,9 @@ const SettingsPage = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium mb-1">桌面通知</div>
+                  <div className="font-medium mb-1">Desktop notifications</div>
                   <div className="text-sm text-gray-500">
-                    接收新消息提醒
+                    Receive alerts for new activity
                   </div>
                 </div>
                 <Switch />
@@ -222,10 +223,10 @@ const SettingsPage = () => {
           </Card>
         </motion.div>
 
-        {/* 保存按钮 */}
+        {/* Action buttons */}
         <div className="flex justify-end space-x-3">
           <Button size="large">
-            重置
+            Reset
           </Button>
           <Button
             type="primary"
@@ -235,7 +236,7 @@ const SettingsPage = () => {
             loading={saving}
             className="bg-gradient-hku border-0"
           >
-            保存设置
+            Save Settings
           </Button>
         </div>
       </Form>

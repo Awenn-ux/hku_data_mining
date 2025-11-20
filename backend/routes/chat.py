@@ -1,5 +1,5 @@
 """
-聊天路由 - 问答功能
+Chat routes - Q&A
 """
 from flask import Blueprint, request, jsonify, session
 from database import db, User, QueryHistory
@@ -10,7 +10,7 @@ from services.rag_service import RAGService
 
 chat_bp = Blueprint('chat', __name__)
 
-# 初始化服务
+# Initialize services
 email_service = EmailService(
     client_id=Config.GRAPH_CLIENT_ID,
     client_secret=Config.GRAPH_CLIENT_SECRET,
@@ -28,42 +28,42 @@ rag_service = RAGService(
 
 @chat_bp.route('/ask', methods=['POST'])
 def ask_question():
-    """提问接口 - 核心问答流程"""
+    """Core Q&A endpoint"""
     user_id = session.get('user_id')
     if not user_id:
-        return jsonify({'code': 401, 'message': '未登录', 'data': None}), 401
+        return jsonify({'code': 401, 'message': 'Not authenticated', 'data': None}), 401
     
     user = User.query.get(user_id)
     if not user:
-        return jsonify({'code': 404, 'message': '用户不存在', 'data': None}), 404
+        return jsonify({'code': 404, 'message': 'User not found', 'data': None}), 404
     
     data = request.get_json()
     question = data.get('question', '').strip()
     
     if not question:
-        return jsonify({'code': 400, 'message': '问题不能为空', 'data': None}), 400
+        return jsonify({'code': 400, 'message': 'Question cannot be empty', 'data': None}), 400
     
     try:
-        # 定义检索函数
+        # Retrieval helpers
         def retrieve_knowledge(query):
-            """检索知识库"""
+            """Search knowledge base"""
             try:
                 return vector_store.search(query, Config.TOP_K)
             except Exception as e:
-                print(f"知识库检索出错: {e}")
+                print(f"Knowledge retrieval failed: {e}")
                 return []
         
         def retrieve_emails(query):
-            """检索邮箱"""
+            """Search mailbox"""
             try:
                 if not user.email_connected or not user.access_token:
                     return []
                 return email_service.search_emails(user.access_token, query, top=5)
             except Exception as e:
-                print(f"邮箱检索出错: {e}")
+                print(f"Email retrieval failed: {e}")
                 return []
         
-        # 并行检索知识库和邮箱
+        # Parallel retrieval
         retrieval_results = RAGService.parallel_retrieve(
             knowledge_retriever=retrieve_knowledge,
             email_retriever=retrieve_emails,
@@ -73,21 +73,21 @@ def ask_question():
         knowledge_docs = retrieval_results['knowledge']
         email_docs = retrieval_results['emails']
         
-        # 构建上下文
+        # Build context
         context = RAGService.build_context(knowledge_docs, email_docs)
         
-        # 使用 LLM 生成答案
+        # Generate answer
         generation_result = rag_service.generate_answer(question, context)
         answer = generation_result['answer']
         
-        # 保存到历史记录
+        # Save history
         query_history = QueryHistory(
             user_id=user_id,
             question=question,
             answer=answer,
             knowledge_sources=[
                 {
-                    'text': doc['text'][:200],  # 只保存前200字符
+                    'text': doc['text'][:200],
                     'source': doc.get('metadata', {}).get('filename', 'unknown')
                 }
                 for doc in knowledge_docs[:3]
@@ -109,7 +109,7 @@ def ask_question():
         
         return jsonify({
             'code': 0,
-            'message': '成功',
+            'message': 'OK',
             'data': {
                 'answer': answer,
                 'sources': {
@@ -137,22 +137,22 @@ def ask_question():
                 }
             }
         })
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({
             'code': 500,
-            'message': f'问答失败: {str(e)}',
+            'message': f'Failed to process question: {str(e)}',
             'data': None
         }), 500
 
 
 @chat_bp.route('/history', methods=['GET'])
 def get_history():
-    """获取聊天历史"""
+    """Fetch chat history"""
     user_id = session.get('user_id')
     if not user_id:
-        return jsonify({'code': 401, 'message': '未登录', 'data': None}), 401
+        return jsonify({'code': 401, 'message': 'Not authenticated', 'data': None}), 401
     
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
@@ -164,7 +164,7 @@ def get_history():
         
         return jsonify({
             'code': 0,
-            'message': '成功',
+            'message': 'OK',
             'data': {
                 'history': [item.to_dict() for item in pagination.items],
                 'total': pagination.total,
@@ -176,36 +176,36 @@ def get_history():
     except Exception as e:
         return jsonify({
             'code': 500,
-            'message': f'获取历史记录失败: {str(e)}',
+            'message': f'Failed to fetch history: {str(e)}',
             'data': None
         }), 500
 
 
 @chat_bp.route('/history/<int:history_id>', methods=['DELETE'])
 def delete_history(history_id):
-    """删除历史记录"""
+    """Delete a history entry"""
     user_id = session.get('user_id')
     if not user_id:
-        return jsonify({'code': 401, 'message': '未登录', 'data': None}), 401
+        return jsonify({'code': 401, 'message': 'Not authenticated', 'data': None}), 401
     
     try:
         history = QueryHistory.query.filter_by(id=history_id, user_id=user_id).first()
         if not history:
-            return jsonify({'code': 404, 'message': '记录不存在', 'data': None}), 404
+            return jsonify({'code': 404, 'message': 'Record not found', 'data': None}), 404
         
         db.session.delete(history)
         db.session.commit()
         
         return jsonify({
             'code': 0,
-            'message': '删除成功',
+            'message': 'Deleted',
             'data': None
         })
     except Exception as e:
         db.session.rollback()
         return jsonify({
             'code': 500,
-            'message': f'删除失败: {str(e)}',
+            'message': f'Failed to delete history: {str(e)}',
             'data': None
         }), 500
 

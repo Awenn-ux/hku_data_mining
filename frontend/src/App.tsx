@@ -12,11 +12,11 @@ function App() {
   const { theme, isAuthenticated } = useStore();
 
   useEffect(() => {
-    // 初始化主题
+    // Initialize theme
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
-  // 路由守卫
+  // Route guard
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
@@ -27,13 +27,13 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* 登录页 */}
+        {/* Login page */}
         <Route path="/login" element={<LoginPage />} />
         
-        {/* OAuth回调页面 - 不需要认证 */}
+        {/* OAuth callback - no auth required */}
         <Route path="/auth/callback" element={<AuthCallback />} />
         
-        {/* 受保护的路由 */}
+        {/* Protected routes */}
         <Route
           path="/*"
           element={

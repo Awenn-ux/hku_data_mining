@@ -3,17 +3,17 @@ import { persist } from 'zustand/middleware';
 import type { User, Message, Conversation, Document, Theme } from '@/types';
 
 interface AppState {
-  // 用户状态
+  // User state
   user: User | null;
   isAuthenticated: boolean;
   setUser: (user: User | null) => void;
   
-  // 主题
+  // Theme
   theme: Theme;
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
   
-  // 当前对话
+  // Active conversation
   currentConversation: Conversation | null;
   messages: Message[];
   setCurrentConversation: (conversation: Conversation | null) => void;
@@ -21,15 +21,15 @@ interface AppState {
   updateMessage: (id: string, content: string) => void;
   clearMessages: () => void;
   
-  // 对话列表
+  // Conversation list
   conversations: Conversation[];
   setConversations: (conversations: Conversation[]) => void;
   
-  // 知识库
+  // Knowledge base
   documents: Document[];
   setDocuments: (documents: Document[]) => void;
   
-  // UI 状态
+  // UI state
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
   isLoading: boolean;
@@ -39,7 +39,7 @@ interface AppState {
 export const useStore = create<AppState>()(
   persist(
     (set) => ({
-      // 初始状态
+      // Initial state
       user: null,
       isAuthenticated: false,
       theme: 'light',
@@ -50,14 +50,14 @@ export const useStore = create<AppState>()(
       isSidebarOpen: true,
       isLoading: false,
 
-      // 用户操作
+      // User actions
       setUser: (user) =>
         set({
           user,
           isAuthenticated: !!user,
         }),
 
-      // 主题操作
+      // Theme actions
       toggleTheme: () =>
         set((state) => {
           const newTheme = state.theme === 'light' ? 'dark' : 'light';
@@ -70,7 +70,7 @@ export const useStore = create<AppState>()(
         set({ theme });
       },
 
-      // 对话操作
+      // Conversation actions
       setCurrentConversation: (conversation) =>
         set({
           currentConversation: conversation,
@@ -97,10 +97,10 @@ export const useStore = create<AppState>()(
 
       setConversations: (conversations) => set({ conversations }),
 
-      // 知识库操作
+      // Knowledge actions
       setDocuments: (documents) => set({ documents }),
 
-      // UI 操作
+      // UI actions
       toggleSidebar: () =>
         set((state) => ({
           isSidebarOpen: !state.isSidebarOpen,

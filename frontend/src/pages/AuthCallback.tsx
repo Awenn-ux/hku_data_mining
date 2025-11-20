@@ -10,19 +10,19 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // 获取当前用户信息（OAuth回调后session已经设置好了）
+        // Fetch current user info (session should be ready after OAuth)
         const response = await apiService.getCurrentUser();
         if (response && response.code === 0 && response.data) {
-          // 更新用户状态
+          // Update auth state
           setUser(response.data);
-          // 跳转到聊天页面
+          // Redirect to chat page
           navigate('/chat', { replace: true });
         } else {
-          // 获取用户信息失败，跳转到登录页
+          // Failed to get user info, redirect to login
           navigate('/login', { replace: true });
         }
       } catch (error) {
-        console.error('获取用户信息失败:', error);
+        console.error('Failed to fetch user info:', error);
         navigate('/login', { replace: true });
       }
     };
@@ -33,8 +33,8 @@ const AuthCallback = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-hku-green to-hku-blue">
       <div className="text-white text-center">
-        <div className="text-2xl mb-4">正在登录...</div>
-        <div className="text-sm">请稍候</div>
+        <div className="text-2xl mb-4">Signing you in...</div>
+        <div className="text-sm">Please wait</div>
       </div>
     </div>
   );

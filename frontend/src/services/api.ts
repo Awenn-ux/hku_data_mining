@@ -13,7 +13,7 @@ import type {
 
 class ApiService {
   private api: AxiosInstance;
-  // 使用相对路径，这样前端和后端可以在同一个端口
+  // Use relative path so frontend and backend can share the same origin
   private baseURL = import.meta.env.VITE_API_BASE_URL || '';
 
   constructor() {
@@ -26,7 +26,7 @@ class ApiService {
       },
     });
 
-    // 请求拦截器 - 添加 token
+    // Request interceptor - attach token
     this.api.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('access_token');
@@ -38,29 +38,29 @@ class ApiService {
       (error) => Promise.reject(error)
     );
 
-    // 响应拦截器 - 处理错误
+    // Response interceptor - handle errors
     this.api.interceptors.response.use(
       (response) => response.data,
       async (error: AxiosError<ApiResponse>) => {
         if (error.response?.status === 401) {
-          // 401错误：未登录或session过期
-          // 只有在不是 /api/auth/me 请求时才跳转登录页
+          // 401: unauthenticated or expired session
+          // Only redirect when the request is not /api/auth/me
           const isAuthCheck = error.config?.url?.includes('/api/auth/me');
           
           if (!isAuthCheck) {
-            // 非认证检查的401错误，清除认证信息并跳转
+            // Clear auth info and redirect on other 401 responses
             const refreshToken = localStorage.getItem('refresh_token');
             if (refreshToken) {
               try {
                 const { data } = await this.refreshToken(refreshToken);
                 localStorage.setItem('access_token', data.access_token);
-                // 重试原请求
+                // Retry original request
                 if (error.config) {
                   error.config.headers.Authorization = `Bearer ${data.access_token}`;
                   return this.api.request(error.config);
                 }
               } catch {
-                // 刷新失败，清除 token 并跳转登录
+                // Refresh failed — clear tokens and redirect
                 this.clearAuth();
                 window.location.href = '/login';
               }
@@ -81,7 +81,7 @@ class ApiService {
     localStorage.removeItem('user');
   }
 
-  // ============ 认证 API ============
+  // ============ Auth API ============
   async getLoginUrl(): Promise<ApiResponse<{ auth_url: string }>> {
     return this.api.get('/api/auth/login');
   }
@@ -90,7 +90,7 @@ class ApiService {
     user: User;
     token: string;
   }>> {
-    // Flask 后端的回调是 GET 请求，直接在浏览器中处理
+    // Flask backend handles callback via GET, let browser process it
     return this.api.get(`/api/auth/callback?code=${code}`);
   }
 
@@ -114,7 +114,7 @@ class ApiService {
     return this.api.post('/api/auth/logout');
   }
 
-  // ============ 聊天 API ============
+  // ============ Chat API ============
   async sendMessage(request: ChatQueryRequest): Promise<ApiResponse<ChatQueryResponse>> {
 
     return this.api.post('/api/chat/ask', {
@@ -137,7 +137,7 @@ class ApiService {
     return this.api.delete(`/api/chat/history/${id}`);
   }
 
-  // ============ 知识库 API ============
+  // ============ Knowledge API ============
   async uploadDocument(file: File): Promise<ApiResponse<Document>> {
     const formData = new FormData();
     formData.append('file', file);
@@ -181,7 +181,7 @@ class ApiService {
     return this.api.get('/api/knowledge/stats');
   }
 
-  // ============ 邮件 API ============
+  // ============ Email API ============
   async getEmailStatus(): Promise<ApiResponse<{
     connected: boolean;
     last_sync: string | null;
@@ -200,7 +200,7 @@ class ApiService {
   }
 
   async getEmailDetail(id: string): Promise<ApiResponse<EmailMessage>> {
-    // 不支持获取邮件详情
+    // Not supported for email detail
     return Promise.reject('Not supported in simplified version');
   }
 
@@ -208,7 +208,7 @@ class ApiService {
     emails: EmailMessage[];
     count: number;
   }>> {
-    // 改为 POST 请求
+    // Use POST request
     return this.api.post('/api/email/search', {
       keyword,
       top,
@@ -216,11 +216,11 @@ class ApiService {
   }
 
   async getCalendarEvents(): Promise<ApiResponse> {
-    // 不支持日历功能
+    // Calendar not available in simplified build
     return Promise.reject('Not supported in simplified version');
   }
 
-  // ============ 系统 API ============
+  // ============ System API ============
   async getSystemHealth(): Promise<ApiResponse<{
     status: string;
     timestamp: string;
@@ -230,7 +230,7 @@ class ApiService {
   }
 
   async getSystemStats(): Promise<ApiResponse<SystemStats>> {
-    // 不支持系统统计
+    // System statistics not available
     return Promise.reject('Not supported in simplified version');
   }
 

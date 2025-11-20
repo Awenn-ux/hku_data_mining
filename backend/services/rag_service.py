@@ -1,5 +1,5 @@
 """
-RAG 服务 - 检索增强生成
+RAG service - Retrieval Augmented Generation
 """
 
 import time
@@ -10,7 +10,7 @@ from openai import OpenAI
 
 
 class RAGService:
-    """RAG 服务"""
+    """RAG service"""
     
     def __init__(
         self,
@@ -44,36 +44,45 @@ class RAGService:
             openai.api_key = None
     
     def generate_answer(self, question: str, context: str) -> Dict:
-        """使用 LLM 生成答案"""
+        """Generate answer via LLM"""
         start_time = time.time()
         
         if not self.provider:
             return {
-                'answer': "抱歉，未配置可用的 LLM API Key。",
+                'answer': "Sorry, no LLM API key is configured.",
                 'tokens_used': 0,
                 'response_time': time.time() - start_time,
                 'model': self.model,
                 'error': 'missing_api_key'
             }
         
-        # 构建提示词
-        prompt = f"""你是 HKU（香港大学）的智能助手。请根据提供的上下文回答用户的问题。
+        # Build prompt
+        prompt = f"""You are the HKU smart assistant.
 
-上下文信息：
+Primary goal:
+1. Search the provided context and combine it with your own general knowledge to answer the user.
+2. If possible, cross-check conclusions across sources and produce a coherent summary in English.
+3. If the context lacks relevant data, rely on general knowledge but mention that campus-specific details were not found.
+
+Context:
 {context}
 
-用户问题：{question}
+User question: {question}
 
-请根据上下文信息回答问题。如果上下文中没有相关信息，请说明无法根据现有信息回答。
-回答要清晰、准确、专业。"""
+Answer requirements:
+- Provide a concise yet complete explanation.
+- Highlight how the final conclusion was reached (mention if it came from the supplied documents, user emails, or your prior knowledge).
+- If multiple sources give similar conclusions, summarize them into a unified statement.
+- If information conflicts, point it out and explain the reasoning you trust most.
+- Always respond in English."""
 
         try:
-            # 调用 OpenAI API
+            # Call LLM provider
             if self.provider == "deepseek":
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=[
-                        {"role": "system", "content": "你是 HKU 的智能助手，帮助学生解答关于学校和个人邮箱的问题。"},
+                        {"role": "system", "content": "You are the HKU smart assistant, helping students with campus information and personal mailbox content."},
                         {"role": "user", "content": prompt}
                     ],
                     temperature=0.7,
@@ -89,7 +98,7 @@ class RAGService:
                 response = openai.ChatCompletion.create(
                     model=self.model,
                     messages=[
-                        {"role": "system", "content": "你是 HKU 的智能助手，帮助学生解答关于学校和个人邮箱的问题。"},
+                        {"role": "system", "content": "You are the HKU smart assistant, helping students with campus information and personal mailbox content."},
                         {"role": "user", "content": prompt}
                     ],
                     temperature=0.7,
@@ -110,7 +119,7 @@ class RAGService:
             
         except Exception as e:
             return {
-                'answer': f"抱歉，生成答案时出错: {str(e)}",
+                'answer': f"Sorry, failed to generate an answer: {str(e)}",
                 'tokens_used': 0,
                 'response_time': time.time() - start_time,
                 'model': self.model,
@@ -119,16 +128,16 @@ class RAGService:
     
     @staticmethod
     def parallel_retrieve(knowledge_retriever, email_retriever, question: str) -> Dict:
-        """并行检索知识库和邮箱"""
+        """Retrieve knowledge base and email in parallel"""
         knowledge_results = []
         email_results = []
         
         with ThreadPoolExecutor(max_workers=2) as executor:
-            # 提交两个检索任务
+            # Submit tasks
             future_knowledge = executor.submit(knowledge_retriever, question)
             future_email = executor.submit(email_retriever, question)
             
-            # 收集结果
+            # Gather results
             for future in as_completed([future_knowledge, future_email]):
                 try:
                     result = future.result()
@@ -137,7 +146,7 @@ class RAGService:
                     else:
                         email_results = result
                 except Exception as e:
-                    print(f"检索出错: {e}")
+                    print(f"Retrieval error: {e}")
         
         return {
             'knowledge': knowledge_results,
@@ -146,31 +155,31 @@ class RAGService:
     
     @staticmethod
     def build_context(knowledge_docs: List[Dict], email_docs: List[Dict]) -> str:
-        """构建上下文"""
+        """Build context string"""
         context_parts = []
         
-        # 添加知识库内容
+        # Knowledge documents
         if knowledge_docs:
-            context_parts.append("=== 知识库信息 ===")
-            for i, doc in enumerate(knowledge_docs[:3], 1):  # 最多3个
+            context_parts.append("=== Knowledge Base ===")
+            for i, doc in enumerate(knowledge_docs[:3], 1):  # up to 3
                 text = doc.get('text', '')
-                source = doc.get('metadata', {}).get('filename', '未知')
-                context_parts.append(f"\n[知识库 {i}] 来源: {source}\n{text}")
+                source = doc.get('metadata', {}).get('filename', 'unknown')
+                context_parts.append(f"\n[Knowledge {i}] Source: {source}\n{text}")
         
-        # 添加邮件内容
+        # Email content
         if email_docs:
-            context_parts.append("\n\n=== 邮件信息 ===")
-            for i, email in enumerate(email_docs[:3], 1):  # 最多3个
-                subject = email.get('subject', '无主题')
+            context_parts.append("\n\n=== Emails ===")
+            for i, email in enumerate(email_docs[:3], 1):  # up to 3
+                subject = email.get('subject', 'No Subject')
                 preview = email.get('preview', email.get('body', ''))[:300]
-                from_addr = email.get('from', '未知')
+                from_addr = email.get('from', 'Unknown Sender')
                 date = email.get('date', '')
                 context_parts.append(
-                    f"\n[邮件 {i}] 主题: {subject}\n发件人: {from_addr}\n日期: {date}\n内容: {preview}"
+                    f"\n[Email {i}] Subject: {subject}\nFrom: {from_addr}\nDate: {date}\nContent: {preview}"
                 )
         
         if not context_parts:
-            return "没有找到相关信息。"
+            return "No relevant context found."
         
         return "\n".join(context_parts)
 

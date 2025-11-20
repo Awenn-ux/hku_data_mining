@@ -23,7 +23,7 @@ const ChatPage = () => {
   const [showHistory, setShowHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 自动滚动到底部
+  // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -60,7 +60,7 @@ const ChatPage = () => {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: '抱歉，出现了错误。请稍后再试。',
+        content: 'Sorry, something went wrong. Please try again later.',
         timestamp: new Date(),
       };
       addMessage(errorMessage);
@@ -82,44 +82,44 @@ const ChatPage = () => {
 
   return (
     <div className="h-[calc(100vh-144px)] flex flex-col">
-      {/* 顶部操作栏 */}
+      {/* Toolbar */}
       <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
           <Sparkles className="w-6 h-6 text-hku-green" />
           <div>
             <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-              智能对话
+              Intelligent Chat
             </h1>
             <p className="text-sm text-gray-500">
-              基于知识库和邮箱的个性化 AI 助手
+              Personalized AI assistant powered by knowledge base and email
             </p>
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
-          <Tooltip title="查看历史对话">
+          <Tooltip title="View conversation history">
             <Button
               icon={<Clock className="w-4 h-4" />}
               onClick={() => setShowHistory(true)}
             >
-              历史
+              History
             </Button>
           </Tooltip>
 
-          <Tooltip title="新建对话">
+          <Tooltip title="Start a new conversation">
             <Button
               type="primary"
               icon={<Plus className="w-4 h-4" />}
               onClick={handleNewChat}
               className="bg-gradient-hku border-0"
             >
-              新对话
+              New Chat
             </Button>
           </Tooltip>
         </div>
       </div>
 
-      {/* 消息区域 */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
         {messages.length === 0 ? (
           <motion.div
@@ -132,18 +132,18 @@ const ChatPage = () => {
                 <Sparkles className="w-10 h-10" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
-                您好，{user?.name || '同学'}！
+                Hello, {user?.name || 'friend'}!
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-8">
-                我是您的 HKU 智能助手。您可以问我关于课程、活动、邮件等任何问题。
+                I’m your HKU smart assistant. Ask me about courses, events, emails, or anything else.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
                 {[
-                  '如何注册下学期的课程？',
-                  '图书馆的开放时间是什么？',
-                  '我最近有哪些重要的邮件？',
-                  '本周有什么学术活动？',
+                  'How do I register for next semester?',
+                  'What are the library opening hours?',
+                  'Show me my recent important emails.',
+                  'What academic events happen this week?',
                 ].map((q, i) => (
                   <motion.div
                     key={i}
@@ -179,7 +179,7 @@ const ChatPage = () => {
                   className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div className={`max-w-[80%] ${message.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
-                    {/* 消息气泡 */}
+                    {/* Bubble */}
                     <div
                       className={`message-bubble ${
                         message.role === 'user'
@@ -189,16 +189,16 @@ const ChatPage = () => {
                     >
                       <div className="whitespace-pre-wrap">{message.content}</div>
                       
-                      {/* 时间戳 */}
+                      {/* Timestamp */}
                       <div className={`text-xs mt-2 ${message.role === 'user' ? 'text-white/70' : 'text-gray-500'}`}>
-                        {new Date(message.timestamp).toLocaleTimeString('zh-CN', {
+                        {new Date(message.timestamp).toLocaleTimeString('en-US', {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
                       </div>
                     </div>
 
-                    {/* 来源引用 */}
+                    {/* Sources */}
                     {message.sources && message.sources.length > 0 && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
@@ -206,7 +206,7 @@ const ChatPage = () => {
                         className="mt-3 space-y-2"
                       >
                         <div className="text-xs text-gray-500 mb-2">
-                          📚 参考来源：
+                          📚 Reference sources:
                         </div>
                         {message.sources.map((source, idx) => (
                           <Card
@@ -229,7 +229,7 @@ const ChatPage = () => {
                                 </div>
                                 <div className="mt-1">
                                   <Tag color={source.type === 'knowledge_base' ? 'green' : 'blue'} className="text-xs">
-                                    相关度: {(source.relevance_score * 100).toFixed(0)}%
+                                    Relevance: {(source.relevance_score * 100).toFixed(0)}%
                                   </Tag>
                                 </div>
                               </div>
@@ -243,7 +243,7 @@ const ChatPage = () => {
               ))}
             </AnimatePresence>
 
-            {/* 加载动画 */}
+            {/* Typing indicator */}
             {loading && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -265,14 +265,14 @@ const ChatPage = () => {
         )}
       </div>
 
-      {/* 输入区域 */}
+      {/* Composer */}
       <div className="pt-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="flex items-end space-x-3">
           <TextArea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="输入您的问题...（Shift + Enter 换行，Enter 发送）"
+            placeholder="Ask anything... (Shift + Enter for newline, Enter to send)"
             autoSize={{ minRows: 1, maxRows: 6 }}
             className="flex-1 input-hku"
             disabled={loading}
@@ -287,13 +287,13 @@ const ChatPage = () => {
             disabled={!input.trim()}
             className="h-11 px-6 bg-gradient-hku border-0 hover:shadow-hku"
           >
-            发送
+            Send
           </Button>
         </div>
 
         {messages.length > 0 && (
           <div className="mt-2 flex justify-between items-center text-xs text-gray-500">
-            <div>当前对话包含 {messages.length} 条消息</div>
+            <div>This conversation contains {messages.length} messages</div>
             <Button
               type="text"
               size="small"
@@ -301,21 +301,21 @@ const ChatPage = () => {
               icon={<Trash2 className="w-3 h-3" />}
               onClick={handleNewChat}
             >
-              清空对话
+              Clear chat
             </Button>
           </div>
         )}
       </div>
 
-      {/* 历史对话抽屉 */}
+      {/* History drawer */}
       <Drawer
-        title="历史对话"
+        title="Chat history"
         placement="right"
         onClose={() => setShowHistory(false)}
         open={showHistory}
         width={400}
       >
-        <Empty description="暂无历史对话" />
+        <Empty description="No history yet" />
       </Drawer>
     </div>
   );

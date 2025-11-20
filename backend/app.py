@@ -1,5 +1,5 @@
 """
-HKU 智能助手
+HKU Smart Assistant
 """
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
@@ -12,41 +12,41 @@ from config import Config
 from database import db, init_db
 from routes import auth_bp, knowledge_bp, email_bp, chat_bp
 
-# 创建 Flask 应用
+# Create Flask app
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Session 配置
+# Session configuration
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_FILE_DIR'] = './storage/sessions'
 app.config['SESSION_PERMANENT'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = False  # 开发环境设为 False，生产环境设为 True
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production
 
-# 确保 session 目录存在
+# Ensure session directory exists
 os.makedirs('./storage/sessions', exist_ok=True)
 
-# 初始化 Session
+# Initialize session store
 Session(app)
 
-# 初始化 CORS（支持 credentials）
+# Enable CORS with credentials
 CORS(app, resources={r"/api/*": {
     "origins": "*",
     "supports_credentials": True
 }})
 
-# 初始化数据库
+# Initialize database
 init_db(app)
 
 
-# 请求拦截器 - 添加请求 ID
+# Request hook - add request ID
 @app.before_request
 def before_request():
     request.request_id = request.headers.get('X-Request-ID', str(uuid.uuid4()))
 
 
-# 响应拦截器 - 添加请求 ID
+# Response hook - append request ID header
 @app.after_request
 def after_request(response):
     if hasattr(request, 'request_id'):
@@ -54,12 +54,12 @@ def after_request(response):
     return response
 
 
-# 全局错误处理
+# Global error handler
 @app.errorhandler(Exception)
 def handle_error(error):
-    """统一错误处理"""
+    """Centralized error handling"""
     code = getattr(error, 'code', 500)
-    message = str(error) if app.debug else '服务器内部错误'
+    message = str(error) if app.debug else 'Internal server error'
     
     return jsonify({
         'code': code,
@@ -69,20 +69,20 @@ def handle_error(error):
     }), code
 
 
-# 注册路由
+# Register blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(knowledge_bp, url_prefix='/api/knowledge')
 app.register_blueprint(email_bp, url_prefix='/api/email')
 app.register_blueprint(chat_bp, url_prefix='/api/chat')
 
 
-# 健康检查
+# Health check
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """健康检查接口"""
+    """Health check endpoint"""
     return jsonify({
         'code': 0,
-        'message': 'OK',
+        'message': 'Service healthy',
         'data': {
             'status': 'healthy',
             'timestamp': datetime.now().isoformat(),
@@ -91,13 +91,13 @@ def health_check():
     })
 
 
-# 根路径
+# Root endpoint
 @app.route('/')
 def index():
-    """根路径"""
+    """Root endpoint"""
     return jsonify({
         'code': 0,
-        'message': 'HKU 智能助手 API',
+        'message': 'HKU Smart Assistant API',
         'data': {
             'service': 'HKU Smart Assistant',
             'version': '1.0.0',

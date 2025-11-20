@@ -1,18 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ConfigProvider, theme as antdTheme } from 'antd';
-import zhCN from 'antd/locale/zh_CN';
+import enUS from 'antd/locale/en_US';
 import App from './App';
 import './assets/styles/global.css';
 import { useStore } from './store/useStore';
 
-// 主题配置
+// Theme configuration
 const ThemeWrapper = () => {
   const theme = useStore((state) => state.theme);
 
   return (
     <ConfigProvider
-      locale={zhCN}
+      locale={enUS}
       theme={{
         algorithm: theme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token: {

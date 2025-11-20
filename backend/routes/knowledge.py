@@ -1,5 +1,5 @@
 """
-知识库路由
+Knowledge base routes
 """
 from flask import Blueprint, request, jsonify, session
 from werkzeug.utils import secure_filename
@@ -12,42 +12,42 @@ from services.vector_store import vector_store
 
 knowledge_bp = Blueprint('knowledge', __name__)
 
-# 初始化向量存储
+# Initialize vector store
 vector_store.initialize()
 
 
 def allowed_file(filename):
-    """检查文件类型是否允许"""
+    """Check whether file type is allowed"""
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
 
 @knowledge_bp.route('/upload', methods=['POST'])
 def upload_document():
-    """上传文档到知识库（仅开发者可用）"""
-    # 禁用用户端上传，仅供开发者通过管理脚本导入
+    """Upload document to knowledge base (developer only)"""
+    # Disabled for end users; docs managed via admin tooling
     return jsonify({
         'code': 403,
-        'message': '文档上传已禁用，请联系管理员导入知识库',
+        'message': 'Document upload is disabled, please contact an administrator',
         'data': None
     }), 403
     
     user_id = session.get('user_id')
     if not user_id:
-        return jsonify({'code': 401, 'message': '未登录', 'data': None}), 401
+        return jsonify({'code': 401, 'message': 'Not authenticated', 'data': None}), 401
     
-    # 检查文件
+    # Validate file
     if 'file' not in request.files:
-        return jsonify({'code': 400, 'message': '没有文件', 'data': None}), 400
+        return jsonify({'code': 400, 'message': 'No file provided', 'data': None}), 400
     
     file = request.files['file']
     if file.filename == '':
-        return jsonify({'code': 400, 'message': '文件名为空', 'data': None}), 400
+        return jsonify({'code': 400, 'message': 'Filename is empty', 'data': None}), 400
     
     if not allowed_file(file.filename):
         return jsonify({
             'code': 400,
-            'message': f'不支持的文件类型，仅支持: {", ".join(Config.ALLOWED_EXTENSIONS)}',
+            'message': f'Unsupported file type. Allowed: {", ".join(Config.ALLOWED_EXTENSIONS)}',
             'data': None
         }), 400
     

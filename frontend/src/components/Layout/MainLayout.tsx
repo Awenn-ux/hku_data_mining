@@ -33,20 +33,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     {
       key: '/chat',
       icon: <MessageSquare className="w-5 h-5" />,
-      label: '智能对话',
-      description: 'AI 助手问答',
+      label: 'Intelligent Chat',
+      description: 'AI assistant Q&A',
     },
     {
       key: '/email',
       icon: <Mail className="w-5 h-5" />,
-      label: '邮件集成',
-      description: '邮箱同步',
+      label: 'Email Hub',
+      description: 'Mailbox sync',
     },
     {
       key: '/settings',
       icon: <Settings className="w-5 h-5" />,
-      label: '设置',
-      description: '系统配置',
+      label: 'Settings',
+      description: 'System preferences',
     },
   ];
 
@@ -54,13 +54,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     {
       key: 'profile',
       icon: <UserIcon className="w-4 h-4" />,
-      label: '个人资料',
+      label: 'Profile',
       onClick: () => navigate('/profile'),
     },
     {
       key: 'logout',
       icon: <LogOut className="w-4 h-4" />,
-      label: '退出登录',
+      label: 'Sign out',
       onClick: () => {
         localStorage.clear();
         navigate('/login');
@@ -71,7 +71,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <Layout className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      {/* 侧边栏 */}
+      {/* Sidebar */}
       <AnimatePresence>
         {isSidebarOpen && (
           <motion.div
@@ -91,7 +91,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 background: theme === 'dark' ? '#1f2937' : '#ffffff',
               }}
             >
-              {/* Logo 区域 */}
+              {/* Logo */}
               <div className="h-20 flex items-center justify-center px-4 border-b border-gray-200 dark:border-gray-700 hku-pattern">
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
@@ -106,7 +106,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           HKU Assistant
                         </h1>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          智能助手
+                          Smart Assistant
                         </p>
                       </div>
                     </>
@@ -115,7 +115,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </motion.div>
               </div>
 
-              {/* 菜单 */}
+              {/* Menu */}
               <div className="py-4 space-y-2 px-3">
                 {menuItems.map((item, index) => {
                   const isActive = location.pathname === item.key;
@@ -161,7 +161,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 })}
               </div>
 
-              {/* 底部排名徽章 */}
+              {/* Ranking badge */}
               {!collapsed && (
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
@@ -177,10 +177,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      QS亚洲大学排名
+                      QS Asia University Ranking
                     </p>
                     <p className="text-xs text-hku-gold mt-1">
-                      全球第11位
+                      Global #11
                     </p>
                   </div>
                 </motion.div>
@@ -190,14 +190,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         )}
       </AnimatePresence>
 
-      {/* 主内容区域 */}
+      {/* Main content */}
       <Layout
         className="transition-all duration-300"
         style={{
           marginLeft: isSidebarOpen ? (collapsed ? 80 : 280) : 0,
         }}
       >
-        {/* 顶部导航栏 */}
+        {/* Header */}
         <Header
           className="bg-white dark:bg-gray-800 shadow-sm flex items-center justify-between px-6 sticky top-0 z-30"
           style={{ height: 72 }}
@@ -222,17 +222,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               className="hidden md:block"
             >
               <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-                欢迎回来，{user?.name || '同学'}
+                Welcome back, {user?.name || 'there'}
               </h2>
               <p className="text-sm text-gray-500">
-                您的专属 AI 学习助手
+                Your personal AI assistant
               </p>
             </motion.div>
           </div>
 
           <div className="flex items-center space-x-4">
-            {/* 主题切换 */}
-            <Tooltip title={theme === 'light' ? '切换到暗色模式' : '切换到亮色模式'}>
+            {/* Theme toggle */}
+            <Tooltip title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}>
               <Button
                 type="text"
                 shape="circle"
@@ -248,7 +248,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               />
             </Tooltip>
 
-            {/* 通知 */}
+            {/* Notifications */}
             <Badge count={3} size="small">
               <Button
                 type="text"
@@ -258,7 +258,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               />
             </Badge>
 
-            {/* 用户菜单 */}
+            {/* User menu */}
             <Dropdown
               menu={{ items: userMenuItems }}
               placement="bottomRight"
@@ -287,7 +287,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </Header>
 
-        {/* 内容区域 */}
+        {/* Content area */}
         <Content className="p-6 overflow-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

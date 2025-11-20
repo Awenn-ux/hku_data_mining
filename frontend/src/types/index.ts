@@ -1,11 +1,11 @@
-// API 响应类型
+// API response type
 export interface ApiResponse<T = any> {
   code: number;
   message: string;
   data: T;
 }
 
-// 用户类型
+// User type
 export interface User {
   id: string;
   email: string;
@@ -14,7 +14,7 @@ export interface User {
   email_connected: boolean;
 }
 
-// Token 类型
+// Token response
 export interface TokenResponse {
   access_token: string;
   refresh_token: string;
@@ -22,7 +22,7 @@ export interface TokenResponse {
   expires_in: number;
 }
 
-// 消息类型
+// Message type
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -32,7 +32,7 @@ export interface Message {
   isStreaming?: boolean;
 }
 
-// 来源信息
+// Source metadata
 export interface SourceInfo {
   type: 'knowledge_base' | 'email';
   title: string;
@@ -41,7 +41,7 @@ export interface SourceInfo {
   metadata?: Record<string, any>;
 }
 
-// 对话类型
+// Conversation
 export interface Conversation {
   id: string;
   title: string;
@@ -51,7 +51,7 @@ export interface Conversation {
   messages?: Message[];
 }
 
-// 文档类型
+// Document metadata
 export interface Document {
   id: string;
   filename: string;
@@ -68,7 +68,7 @@ export interface Document {
   processed_at?: string;
 }
 
-// 邮件类型
+// Email message
 export interface EmailMessage {
   id: string;
   message_id: string;
@@ -85,7 +85,7 @@ export interface EmailMessage {
   attachment_count?: number;
 }
 
-// 系统统计
+// System statistics
 export interface SystemStats {
   total_users: number;
   total_conversations: number;
@@ -95,16 +95,16 @@ export interface SystemStats {
   uptime: string;
 }
 
-// 主题类型
+// Theme
 export type Theme = 'light' | 'dark';
 
-// 聊天请求
+// Chat request
 export interface ChatQueryRequest {
   question: string;
   conversation_id?: string;
 }
 
-// 聊天响应
+// Chat response
 export interface ChatQueryResponse {
   answer: string;
   sources: SourceInfo[];

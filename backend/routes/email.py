@@ -1,5 +1,5 @@
 """
-邮箱路由
+Email routes
 """
 from flask import Blueprint, request, jsonify, session
 from datetime import datetime
@@ -9,7 +9,7 @@ from services.email_service import EmailService
 
 email_bp = Blueprint('email', __name__)
 
-# 初始化邮箱服务
+# Initialize email service
 email_service = EmailService(
     client_id=Config.GRAPH_CLIENT_ID,
     client_secret=Config.GRAPH_CLIENT_SECRET,
@@ -19,16 +19,16 @@ email_service = EmailService(
 
 @email_bp.route('/search', methods=['POST'])
 def search_emails():
-    """搜索邮件"""
+    """Search emails"""
     user_id = session.get('user_id')
     if not user_id:
-        return jsonify({'code': 401, 'message': '未登录', 'data': None}), 401
+        return jsonify({'code': 401, 'message': 'Not authenticated', 'data': None}), 401
     
     user = User.query.get(user_id)
     if not user or not user.email_connected:
         return jsonify({
             'code': 400,
-            'message': '邮箱未连接',
+            'message': 'Mailbox not connected',
             'data': None
         }), 400
     
@@ -37,10 +37,10 @@ def search_emails():
     top = data.get('top', 10)
     
     if not keyword:
-        return jsonify({'code': 400, 'message': '关键词不能为空', 'data': None}), 400
+        return jsonify({'code': 400, 'message': 'Keyword cannot be empty', 'data': None}), 400
     
     try:
-        # 检查 token 是否过期，如果过期则刷新
+        # Refresh token if expired
         if user.token_expires_at and user.token_expires_at < datetime.utcnow():
             if user.refresh_token:
                 token_result = email_service.refresh_access_token(
@@ -55,20 +55,20 @@ def search_emails():
             else:
                 return jsonify({
                     'code': 401,
-                    'message': 'Token 已过期，请重新登录',
+                    'message': 'Access token expired, please sign in again',
                     'data': None
                 }), 401
         
-        # 搜索邮件
+        # Search emails
         emails = email_service.search_emails(user.access_token, keyword, top)
         
-        # 更新最后同步时间
+        # Update sync timestamp
         user.email_last_sync = datetime.utcnow()
         db.session.commit()
         
         return jsonify({
             'code': 0,
-            'message': '搜索成功',
+            'message': 'OK',
             'data': {
                 'emails': emails,
                 'count': len(emails)
@@ -78,39 +78,39 @@ def search_emails():
     except Exception as e:
         return jsonify({
             'code': 500,
-            'message': f'搜索邮件失败: {str(e)}',
+            'message': f'Failed to search emails: {str(e)}',
             'data': None
         }), 500
 
 
 @email_bp.route('/recent', methods=['GET'])
 def get_recent_emails():
-    """获取最近的邮件"""
+    """Get recent emails"""
     user_id = session.get('user_id')
     if not user_id:
-        return jsonify({'code': 401, 'message': '未登录', 'data': None}), 401
+        return jsonify({'code': 401, 'message': 'Not authenticated', 'data': None}), 401
     
     user = User.query.get(user_id)
     if not user or not user.email_connected:
         return jsonify({
             'code': 400,
-            'message': '邮箱未连接',
+            'message': 'Mailbox not connected',
             'data': None
         }), 400
     
     top = request.args.get('top', 50, type=int)
     
     try:
-        print(f"正在获取用户 {user.email} 的邮件...")
-        print(f"access_token存在: {bool(user.access_token)}")
+        print(f"Fetching emails for {user.email}...")
+        print(f"access_token present: {bool(user.access_token)}")
         
         emails = email_service.get_recent_emails(user.access_token, top)
         
-        print(f"成功获取 {len(emails)} 封邮件")
+        print(f"Fetched {len(emails)} emails")
         
         return jsonify({
             'code': 0,
-            'message': '成功',
+            'message': 'OK',
             'data': {
                 'emails': emails,
                 'count': len(emails)
@@ -118,30 +118,30 @@ def get_recent_emails():
         })
         
     except Exception as e:
-        print(f"获取邮件异常: {str(e)}")
+        print(f"Failed to fetch emails: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({
             'code': 500,
-            'message': f'获取邮件失败: {str(e)}',
+            'message': f'Failed to retrieve emails: {str(e)}',
             'data': None
         }), 500
 
 
 @email_bp.route('/status', methods=['GET'])
 def get_email_status():
-    """获取邮箱连接状态"""
+    """Get mailbox status"""
     user_id = session.get('user_id')
     if not user_id:
-        return jsonify({'code': 401, 'message': '未登录', 'data': None}), 401
+        return jsonify({'code': 401, 'message': 'Not authenticated', 'data': None}), 401
     
     user = User.query.get(user_id)
     if not user:
-        return jsonify({'code': 404, 'message': '用户不存在', 'data': None}), 404
+        return jsonify({'code': 404, 'message': 'User not found', 'data': None}), 404
     
     return jsonify({
         'code': 0,
-        'message': '成功',
+        'message': 'OK',
         'data': {
             'connected': user.email_connected,
             'last_sync': user.email_last_sync.isoformat() if user.email_last_sync else None

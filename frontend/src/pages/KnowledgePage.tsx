@@ -30,7 +30,7 @@ const KnowledgePage = () => {
       const response = await apiService.getDocuments();
       setDocuments(response.data);
     } catch (error) {
-      message.error('加载文档列表失败');
+      message.error('Failed to load documents');
     } finally {
       setLoading(false);
     }
@@ -44,11 +44,11 @@ const KnowledgePage = () => {
       setUploading(true);
       try {
         const response = await apiService.uploadDocument(file as File);
-        message.success(`${(file as File).name} 上传成功`);
+        message.success(`${(file as File).name} uploaded successfully`);
         onSuccess?.(response);
         loadDocuments();
       } catch (error) {
-        message.error('上传失败');
+        message.error('Upload failed');
         onError?.(error as Error);
       } finally {
         setUploading(false);
@@ -60,20 +60,20 @@ const KnowledgePage = () => {
   const handleDelete = async (id: string) => {
     try {
       await apiService.deleteDocument(id);
-      message.success('文档删除成功');
+      message.success('Document deleted');
       loadDocuments();
     } catch (error) {
-      message.error('删除失败');
+      message.error('Failed to delete document');
     }
   };
 
   const handleReprocess = async (id: string) => {
     try {
       await apiService.reprocessDocument(id);
-      message.success('正在重新处理文档');
+      message.success('Reprocessing document...');
       loadDocuments();
     } catch (error) {
-      message.error('重新处理失败');
+      message.error('Failed to reprocess document');
     }
   };
 
@@ -89,17 +89,17 @@ const KnowledgePage = () => {
 
   const getStatusText = (status: string) => {
     const textMap: Record<string, string> = {
-      pending: '等待处理',
-      processing: '处理中',
-      completed: '已完成',
-      failed: '失败',
+      pending: 'Pending',
+      processing: 'Processing',
+      completed: 'Completed',
+      failed: 'Failed',
     };
     return textMap[status] || status;
   };
 
   const columns = [
     {
-      title: '文件名',
+      title: 'Filename',
       dataIndex: 'filename',
       key: 'filename',
       render: (text: string) => (
@@ -110,7 +110,7 @@ const KnowledgePage = () => {
       ),
     },
     {
-      title: '类型',
+      title: 'Type',
       dataIndex: 'file_type',
       key: 'file_type',
       render: (type: string) => (
@@ -118,21 +118,21 @@ const KnowledgePage = () => {
       ),
     },
     {
-      title: '大小',
+      title: 'Size',
       dataIndex: 'file_size',
       key: 'file_size',
       render: (size: number) => `${(size / 1024).toFixed(2)} KB`,
     },
     {
-      title: '分块数',
+      title: 'Chunks',
       dataIndex: 'chunk_count',
       key: 'chunk_count',
       render: (count: number) => (
-        <Tag color="green">{count} 块</Tag>
+        <Tag color="green">{count} chunks</Tag>
       ),
     },
     {
-      title: '状态',
+      title: 'Status',
       dataIndex: 'status',
       key: 'status',
       render: (status: string) => (
@@ -142,12 +142,12 @@ const KnowledgePage = () => {
       ),
     },
     {
-      title: '操作',
+      title: 'Actions',
       key: 'action',
       render: (_: any, record: Document) => (
         <div className="flex items-center space-x-2">
           {record.status === 'failed' && (
-            <Tooltip title="重新处理">
+            <Tooltip title="Reprocess">
               <Button
                 type="text"
                 size="small"
@@ -157,10 +157,10 @@ const KnowledgePage = () => {
             </Tooltip>
           )}
           <Popconfirm
-            title="确定删除此文档？"
+            title="Delete this document?"
             onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
+            okText="Delete"
+            cancelText="Cancel"
           >
             <Button
               type="text"
@@ -176,20 +176,20 @@ const KnowledgePage = () => {
 
   return (
     <div className="space-y-6">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-center space-x-3">
         <BookOpen className="w-6 h-6 text-hku-green" />
         <div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            知识库管理
+            Knowledge Base
           </h1>
           <p className="text-sm text-gray-500">
-            上传和管理学校文档，构建您的专属知识库
+            Upload and manage campus documents to build your private corpus
           </p>
         </div>
       </div>
 
-      {/* 上传区域 */}
+      {/* Upload area */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -201,14 +201,14 @@ const KnowledgePage = () => {
                 <UploadIcon className="w-16 h-16 text-hku-green mx-auto" />
               </p>
               <p className="text-lg font-medium text-gray-800 dark:text-white mt-4">
-                点击或拖拽文件到此区域上传
+                Click or drag files here to upload
               </p>
               <p className="text-sm text-gray-500 mt-2">
-                支持 PDF、DOCX、TXT 格式，单个文件不超过 10MB
+                Supports PDF, DOCX, TXT up to 10 MB each
               </p>
               {uploading && (
                 <div className="mt-4">
-                  <Spin tip="正在上传..." />
+                  <Spin tip="Uploading..." />
                 </div>
               )}
             </div>
@@ -216,7 +216,7 @@ const KnowledgePage = () => {
         </Card>
       </motion.div>
 
-      {/* 统计信息 */}
+      {/* Stats */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -224,19 +224,19 @@ const KnowledgePage = () => {
         className="grid grid-cols-1 md:grid-cols-4 gap-4"
       >
         {[
-          { label: '总文档', value: documents.length, color: 'hku-green' },
+          { label: 'Total documents', value: documents.length, color: 'hku-green' },
           {
-            label: '已处理',
+            label: 'Processed',
             value: documents.filter((d) => d.status === 'completed').length,
             color: 'green-600',
           },
           {
-            label: '处理中',
+            label: 'Processing',
             value: documents.filter((d) => d.status === 'processing').length,
             color: 'blue-600',
           },
           {
-            label: '总分块',
+            label: 'Total chunks',
             value: documents.reduce((sum, d) => sum + d.chunk_count, 0),
             color: 'hku-gold',
           },
@@ -252,7 +252,7 @@ const KnowledgePage = () => {
         ))}
       </motion.div>
 
-      {/* 文档列表 */}
+      {/* Document list */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -261,13 +261,13 @@ const KnowledgePage = () => {
         <Card
           title={
             <div className="flex items-center justify-between">
-              <span>文档列表</span>
+              <span>Documents</span>
               <Button
                 icon={<RefreshCw className="w-4 h-4" />}
                 onClick={loadDocuments}
                 loading={loading}
               >
-                刷新
+                Refresh
               </Button>
             </div>
           }
@@ -281,12 +281,12 @@ const KnowledgePage = () => {
             pagination={{
               pageSize: 10,
               showSizeChanger: true,
-              showTotal: (total) => `共 ${total} 个文档`,
+              showTotal: (total) => `Total ${total} documents`,
             }}
             locale={{
               emptyText: (
                 <Empty
-                  description="暂无文档，请上传文件"
+                  description="No documents yet — upload files to begin"
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                 />
               ),

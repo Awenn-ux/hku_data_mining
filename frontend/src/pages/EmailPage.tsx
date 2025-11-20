@@ -24,36 +24,36 @@ const EmailPage = () => {
     console.log('EmailPage mounted, user:', user);
     console.log('email_connected:', user?.email_connected);
     
-    // 只有在邮箱已连接时才加载邮件
+    // Only load emails when mailbox is connected
     if (user?.email_connected) {
-      console.log('开始加载邮件...');
+      console.log('Start loading emails...');
       loadEmails();
     }
   }, [user?.email_connected]);
 
   const loadEmails = async () => {
-    console.log('loadEmails 被调用');
+    console.log('loadEmails invoked');
     setLoading(true);
     setError(null);
     try {
-      console.log('正在调用 API...');
+      console.log('Calling email API...');
       const response = await apiService.getEmails(50);
-      console.log('API 响应:', response);
+      console.log('API response:', response);
       
       if (response && response.data && response.data.emails) {
-        console.log('成功获取邮件:', response.data.emails.length, '封');
+        console.log('Fetched emails:', response.data.emails.length);
         setEmails(response.data.emails);
       } else {
-        console.log('响应数据格式不正确:', response);
+        console.log('Unexpected response format:', response);
         setEmails([]);
       }
     } catch (error: any) {
-      console.error('加载邮件失败:', error);
-      console.error('错误详情:', error.response || error);
-      setError(error?.message || '加载邮件失败');
+      console.error('Failed to load emails:', error);
+      console.error('Error detail:', error.response || error);
+      setError(error?.message || 'Failed to load emails');
       setEmails([]);
     } finally {
-      console.log('loadEmails 完成');
+      console.log('loadEmails finished');
       setLoading(false);
     }
   };
@@ -61,12 +61,11 @@ const EmailPage = () => {
   const handleConnect = async () => {
     setConnecting(true);
     try {
-      // 获取Microsoft登录URL并跳转
+      // Get Microsoft login URL and redirect
       const response = await apiService.getLoginUrl();
       window.location.href = response.data.auth_url;
     } catch (error) {
-      // message.error('连接邮箱失败');
-      console.error('获取登录链接失败:', error);
+      console.error('Failed to get login link:', error);
     } finally {
       setConnecting(false);
     }
@@ -79,19 +78,19 @@ const EmailPage = () => {
       const response = await apiService.searchEmails(searchQuery);
       setEmails(response.data.emails || []);
     } catch (error) {
-      console.error('搜索邮件失败:', error);
+      console.error('Failed to search emails:', error);
       setEmails([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // 添加调试信息
+  // Debug info
   console.log('EmailPage render, user:', user, 'error:', error, 'loading:', loading, 'emails:', emails.length);
 
-  // 如果用户未连接邮箱，显示连接提示
+  // Prompt user to connect mailbox
   if (!user?.email_connected) {
-    console.log('用户未连接邮箱，显示连接提示');
+    console.log('Mailbox not connected, showing prompt');
     return (
       <div className="h-[calc(100vh-200px)] flex items-center justify-center">
         <motion.div
@@ -103,13 +102,13 @@ const EmailPage = () => {
             <Mail className="w-10 h-10" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
-            连接您的邮箱
+            Connect your email
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            使用 Microsoft 账号登录后，AI 助手可以基于您的邮件内容提供更个性化的回答
+            Sign in with Microsoft so the assistant can tailor answers with your inbox context.
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-500 mb-8">
-            💡 提示：开发者登录无法访问邮箱功能，请使用 Microsoft 账号登录
+            💡 Developer login cannot access mailbox data—use Microsoft sign-in instead.
           </p>
           <Button
             type="primary"
@@ -119,22 +118,22 @@ const EmailPage = () => {
             loading={connecting}
             className="h-12 px-8 bg-gradient-hku border-0"
           >
-            使用 Microsoft 账号登录
+            Sign in with Microsoft
           </Button>
         </motion.div>
       </div>
     );
   }
 
-  // 如果有错误，显示错误信息
+  // Error state
   if (error) {
     return (
       <div className="h-[calc(100vh-200px)] flex items-center justify-center">
         <div className="text-center max-w-md">
-          <div className="text-red-500 mb-4 text-lg">⚠️ 加载失败</div>
+          <div className="text-red-500 mb-4 text-lg">⚠️ Failed to load</div>
           <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <Button onClick={() => { setError(null); loadEmails(); }}>
-            重试
+            Retry
           </Button>
         </div>
       </div>
@@ -143,16 +142,16 @@ const EmailPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Mail className="w-6 h-6 text-hku-blue" />
           <div>
             <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-              邮箱集成
+              Email Integration
             </h1>
             <p className="text-sm text-gray-500">
-              管理和查看您的学术邮件
+              Manage and review your academic inbox
             </p>
           </div>
         </div>
@@ -160,24 +159,24 @@ const EmailPage = () => {
         <div className="flex items-center space-x-2">
           <Button
             icon={<Calendar className="w-4 h-4" />}
-            onClick={() => {/* TODO: 显示日历事件 */}}
+            onClick={() => {/* TODO: open calendar view */}}
           >
-            日历事件
+            Calendar
           </Button>
           <Button
             icon={<RefreshCw className="w-4 h-4" />}
             onClick={loadEmails}
             loading={loading}
           >
-            刷新
+            Refresh
           </Button>
         </div>
       </div>
 
-      {/* 搜索栏 */}
+      {/* Search */}
       <Card className="card-hku">
         <Input.Search
-          placeholder="搜索邮件内容..."
+          placeholder="Search email content..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onSearch={handleSearch}
@@ -185,19 +184,19 @@ const EmailPage = () => {
           prefix={<Search className="w-4 h-4 text-gray-400" />}
           enterButton={
             <Button type="primary" className="bg-gradient-hku border-0">
-              搜索
+              Search
             </Button>
           }
         />
       </Card>
 
-      {/* 邮件列表 */}
+      {/* Email list */}
       <Card className="card-hku">
         {loading ? (
-          <div className="text-center py-8">加载中...</div>
+          <div className="text-center py-8">Loading...</div>
         ) : !Array.isArray(emails) || emails.length === 0 ? (
           <Empty
-            description="暂无邮件"
+            description="No emails yet"
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         ) : (
@@ -214,25 +213,25 @@ const EmailPage = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1">
                       <span className="font-medium text-gray-900 dark:text-white truncate">
-                        {email.subject || '无主题'}
+                        {email.subject || 'No subject'}
                       </span>
                       {email.is_academic && (
                         <Tag color="green" className="text-xs">
-                          学术
+                          Academic
                         </Tag>
                       )}
                       {email.importance === 'high' && (
-                        <Badge status="error" text="重要" />
+                        <Badge status="error" text="Important" />
                       )}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                      来自: {email.sender || '未知'} ({email.sender_email || ''})
+                      From: {email.sender || 'Unknown'} ({email.sender_email || ''})
                     </div>
                     <div className="text-sm text-gray-500 line-clamp-2 mb-1">
                       {email.body_preview || ''}
                     </div>
                     <div className="text-xs text-gray-400">
-                      {email.received_at ? new Date(email.received_at).toLocaleString('zh-CN') : ''}
+                      {email.received_at ? new Date(email.received_at).toLocaleString('en-US') : ''}
                     </div>
                   </div>
                 </div>
