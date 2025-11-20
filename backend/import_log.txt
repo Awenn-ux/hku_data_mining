@@ -1,0 +1,20 @@
+Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event ClientCreateCollectionEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event ClientCreateCollectionEvent: capture() takes 1 positional argument but 3 were given
+/mnt/c/Users/wen/Desktop/hku first semester/Data mining/hku_data_mining_project-main/backend/admin_import_documents.py:63: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  uploaded_at=datetime.utcnow()
+pdfplumber 提取为空，可能是扫描版，尝试其他方法...
+Failed to send telemetry event CollectionAddEvent: capture() takes 1 positional argument but 3 were given
+/mnt/c/Users/wen/Desktop/hku first semester/Data mining/hku_data_mining_project-main/backend/admin_import_documents.py:63: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  uploaded_at=datetime.utcnow()
+pdfplumber 提取为空，可能是扫描版，尝试其他方法...
+/mnt/c/Users/wen/Desktop/hku first semester/Data mining/hku_data_mining_project-main/backend/admin_import_documents.py:63: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  uploaded_at=datetime.utcnow()
+pdfplumber 提取为空，可能是扫描版，尝试其他方法...
+/mnt/c/Users/wen/Desktop/hku first semester/Data mining/hku_data_mining_project-main/backend/admin_import_documents.py:63: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  uploaded_at=datetime.utcnow()
+pdfplumber 提取为空，可能是扫描版，尝试其他方法...
+/mnt/c/Users/wen/Desktop/hku first semester/Data mining/hku_data_mining_project-main/backend/admin_import_documents.py:63: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  uploaded_at=datetime.utcnow()
+pdfplumber 提取为空，可能是扫描版，尝试其他方法...
