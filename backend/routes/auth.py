@@ -1,12 +1,14 @@
 """
 Authentication routes
 """
+import threading
 from flask import Blueprint, request, jsonify, session
 from datetime import datetime
 from urllib.parse import quote
 from database import db, User
 from config import Config
 from services.email_service import EmailService
+from services.vector_store import email_vector_store
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -90,6 +92,28 @@ def callback():
         
         # Save session
         session['user_id'] = user.id
+        
+        # Start background email sync to vector store
+        def sync_emails_background():
+            """后台同步邮件到向量库"""
+            try:
+                print(f"[后台任务] 开始为用户 {user.id} 同步邮件到向量库...")
+                synced = email_vector_store.sync_user_emails(
+                    email_service, 
+                    user.access_token, 
+                    user.id, 
+                    limit=100
+                )
+                print(f"[后台任务] 用户 {user.id} 邮件同步完成，共同步 {synced} 封邮件")
+            except Exception as e:
+                print(f"[后台任务] 用户 {user.id} 邮件同步失败: {str(e)}")
+                import traceback
+                traceback.print_exc()
+        
+        # 在后台线程中启动同步任务（不阻塞登录响应）
+        sync_thread = threading.Thread(target=sync_emails_background, daemon=True)
+        sync_thread.start()
+        print(f"[登录] 已启动后台邮件同步任务（用户 {user.id}）")
         
         # Redirect to frontend callback
         from flask import redirect

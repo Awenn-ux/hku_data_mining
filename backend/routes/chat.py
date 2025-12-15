@@ -1,10 +1,11 @@
 """
 Chat routes - Q&A
 """
+from datetime import datetime
 from flask import Blueprint, request, jsonify, session
 from database import db, User, QueryHistory
 from config import Config
-from services.vector_store import vector_store
+from services.vector_store import vector_store, email_vector_store
 from services.email_service import EmailService
 from services.rag_service import RAGService
 
@@ -26,6 +27,8 @@ rag_service = RAGService(
 )
 
 
+
+
 @chat_bp.route('/ask', methods=['POST'])
 def ask_question():
     """Core Q&A endpoint"""
@@ -43,27 +46,80 @@ def ask_question():
     if not question:
         return jsonify({'code': 400, 'message': 'Question cannot be empty', 'data': None}), 400
     
+    # 用于收集处理步骤
+    processing_steps = []
+    
+    def add_step(step: str, status: str = 'info'):
+        """添加处理步骤"""
+        processing_steps.append({
+            'step': step,
+            'status': status,  # 'info', 'success', 'warning', 'error'
+            'timestamp': datetime.utcnow().isoformat()
+        })
+        print(f"[{status.upper()}] {step}")
+    
     try:
         # Retrieval helpers
         def retrieve_knowledge(query):
             """Search knowledge base"""
             try:
-                return vector_store.search(query, Config.TOP_K)
+                add_step(f"正在搜索知识库: '{query}'", 'info')
+                results = vector_store.search(query, Config.TOP_K)
+                add_step(f"知识库搜索完成，找到 {len(results)} 条相关文档", 'success')
+                return results
             except Exception as e:
+                add_step(f"知识库搜索失败: {str(e)}", 'error')
                 print(f"Knowledge retrieval failed: {e}")
                 return []
         
         def retrieve_emails(query):
-            """Search mailbox"""
+            """Search mailbox using vector similarity (RAG)"""
             try:
                 if not user.email_connected or not user.access_token:
+                    add_step("邮件检索跳过: 用户邮箱未连接", 'warning')
                     return []
-                return email_service.search_emails(user.access_token, query, top=5)
+                
+                # 使用向量相似度搜索邮件（RAG方式）
+                add_step(f"使用向量搜索邮件，查询: '{query}'", 'info')
+                # 不设置上限，返回所有符合条件的邮件
+                emails = email_vector_store.search_emails(query, user_id, top_k=None)
+                
+                # 显示找到的邮件主题和相似度
+                if emails:
+                    email_info = ", ".join([f"{e.get('subject', '')[:30]}...({e.get('similarity', 0):.0%})" for e in emails[:3]])
+                    add_step(f"向量搜索完成，找到 {len(emails)} 封相关邮件: {email_info}", 'success')
+                else:
+                    add_step(f"向量搜索完成，找到 {len(emails)} 封相关邮件", 'warning')
+                
+                # 如果向量搜索没有结果，尝试同步邮件后再搜索
+                if not emails or len(emails) == 0:
+                    add_step("向量搜索无结果，尝试同步邮件到向量库...", 'info')
+                    try:
+                        # 同步最近100封邮件到向量库
+                        add_step("正在同步邮件到向量库...", 'info')
+                        synced = email_vector_store.sync_user_emails(
+                            email_service, user.access_token, user_id, limit=100
+                        )
+                        add_step(f"同步了 {synced} 封邮件到向量库", 'success')
+                        
+                        # 再次尝试向量搜索
+                        add_step("同步后再次进行向量搜索...", 'info')
+                        emails = email_vector_store.search_emails(query, user_id, top_k=None)
+                        add_step(f"同步后向量搜索完成，找到 {len(emails)} 封相关邮件", 'success' if emails else 'warning')
+                    except Exception as sync_error:
+                        add_step(f"同步邮件失败: {str(sync_error)}", 'error')
+                        print(f"同步邮件失败: {sync_error}")
+                
+                return emails
             except Exception as e:
-                print(f"Email retrieval failed: {e}")
+                add_step(f"邮件检索失败: {str(e)}", 'error')
+                print(f"邮件检索失败: {e}")
+                import traceback
+                traceback.print_exc()
                 return []
         
         # Parallel retrieval
+        add_step("开始并行检索知识库和邮箱...", 'info')
         retrieval_results = RAGService.parallel_retrieve(
             knowledge_retriever=retrieve_knowledge,
             email_retriever=retrieve_emails,
@@ -73,12 +129,17 @@ def ask_question():
         knowledge_docs = retrieval_results['knowledge']
         email_docs = retrieval_results['emails']
         
+        add_step(f"检索完成: 知识库 {len(knowledge_docs)} 条，邮箱 {len(email_docs)} 封", 'success')
+        
         # Build context
+        add_step("正在构建上下文...", 'info')
         context = RAGService.build_context(knowledge_docs, email_docs)
         
         # Generate answer
+        add_step("正在生成回答...", 'info')
         generation_result = rag_service.generate_answer(question, context)
         answer = generation_result['answer']
+        add_step("回答生成完成", 'success')
         
         # Save history
         query_history = QueryHistory(
@@ -112,6 +173,7 @@ def ask_question():
             'message': 'OK',
             'data': {
                 'answer': answer,
+                'processing_steps': processing_steps,  # 添加处理步骤
                 'sources': {
                     'knowledge': [
                         {

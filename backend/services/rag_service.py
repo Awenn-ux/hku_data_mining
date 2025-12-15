@@ -60,9 +60,10 @@ class RAGService:
         prompt = f"""You are the HKU smart assistant.
 
 Primary goal:
-1. Search the provided context and combine it with your own general knowledge to answer the user.
-2. If possible, cross-check conclusions across sources and produce a coherent summary in English.
-3. If the context lacks relevant data, rely on general knowledge but mention that campus-specific details were not found.
+1. Carefully analyze the provided email context and answer the user's question based on the actual email content.
+2. If emails are provided in the context, you MUST analyze them thoroughly and extract relevant information from them.
+3. Only if the emails truly don't contain relevant information, you can mention that and provide general knowledge.
+4. Pay special attention to email subjects and content - they contain the actual information the user is asking about.
 
 Context:
 {context}
@@ -70,11 +71,13 @@ Context:
 User question: {question}
 
 Answer requirements:
-- Provide a concise yet complete explanation.
-- Highlight how the final conclusion was reached (mention if it came from the supplied documents, user emails, or your prior knowledge).
-- If multiple sources give similar conclusions, summarize them into a unified statement.
-- If information conflicts, point it out and explain the reasoning you trust most.
-- Always respond in English."""
+- FIRST, carefully examine all provided emails in the context section.
+- If emails contain information related to the question, summarize and present that information clearly.
+- Mention specific email subjects and key points from the email content.
+- If emails are provided but don't contain relevant information, clearly state that you reviewed the emails but found no matches.
+- Only use general knowledge if no relevant information is found in the provided emails.
+- Always respond in English.
+- Be specific about what you found (or didn't find) in the emails."""
 
         try:
             # Call LLM provider
@@ -169,13 +172,18 @@ Answer requirements:
         # Email content
         if email_docs:
             context_parts.append("\n\n=== Emails ===")
-            for i, email in enumerate(email_docs[:3], 1):  # up to 3
+            # 不设上限，使用所有提供的邮件
+            for i, email in enumerate(email_docs, 1):
                 subject = email.get('subject', 'No Subject')
-                preview = email.get('preview', email.get('body', ''))[:300]
+                # 优先使用完整的 body 内容，如果没有则使用 preview
+                body_content = email.get('body', '') or email.get('preview', '')
+                # 增加内容长度到1000字符，确保包含足够信息
+                content = body_content[:1000] if body_content else 'No content'
                 from_addr = email.get('from', 'Unknown Sender')
                 date = email.get('date', '')
+                similarity = email.get('similarity', 0)
                 context_parts.append(
-                    f"\n[Email {i}] Subject: {subject}\nFrom: {from_addr}\nDate: {date}\nContent: {preview}"
+                    f"\n[Email {i}] Subject: {subject}\nFrom: {from_addr}\nDate: {date}\nRelevance: {similarity:.2%}\nContent: {content}"
                 )
         
         if not context_parts:
