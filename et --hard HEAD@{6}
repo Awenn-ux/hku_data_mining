@@ -1,0 +1,14 @@
+[33m7fcffca[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: reset: moving to HEAD~2
+[33mf862b7c[m HEAD@{1}: reset: moving to HEAD~2
+[33mcf36712[m HEAD@{2}: reset: moving to HEAD~2
+[33m485adba[m HEAD@{3}: commit: Revert "hku_data_mining project"
+[33m9766148[m HEAD@{4}: reset: moving to 9766148241ae5855e886cbb66aa04bc9f8e79ecc
+[33m9766148[m HEAD@{5}: reset: moving to 9766148241ae5855e886cbb66aa04bc9f8e79ecc
+[33m9766148[m HEAD@{6}: commit: Remove .env from tracking and add to gitignore
+[33mcf36712[m HEAD@{7}: commit: hku_data_mining project
+[33mb62ba8d[m[33m ([m[1;31morigin/main[m[33m)[m HEAD@{8}: commit: Add .env file
+[33mf862b7c[m HEAD@{9}: commit: hku_data_mining project
+[33m01d9cfd[m HEAD@{10}: commit: hku_data_mining project
+[33m7fcffca[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{11}: commit: hku_data_mining project
+[33m197231a[m HEAD@{12}: commit: hku_data_mining project
+[33m93b1b09[m HEAD@{13}: commit (initial): hku_data_mining project
